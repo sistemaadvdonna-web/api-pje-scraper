@@ -14,7 +14,7 @@
     "test:extraction": "node test-fase3.js",
     "test:multiplas": "node test-multiplas-pesquisas.js",
     "api": "node api/server.js",
-    "build": "npx puppeteer browsers install chrome",
+    "postinstall": "npx puppeteer browsers install chrome",
     "start": "node api/server.js"
   },
   "dependencies": {
