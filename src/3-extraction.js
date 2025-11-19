@@ -43,7 +43,7 @@ async function executeAction(page, action) {
       if (action.waitForNavigation) {
         await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 });
       } else if (action.waitTime) {
-        await page.waitForTimeout(action.waitTime);
+        await new Promise(resolve => setTimeout(resolve, action.waitTime));
       }
       break;
       
@@ -61,7 +61,7 @@ async function executeAction(page, action) {
         await page.type(action.selector, action.text);
       }
       if (action.waitTime) {
-        await page.waitForTimeout(action.waitTime);
+        await new Promise(resolve => setTimeout(resolve, action.waitTime));
       }
       break;
       
@@ -69,22 +69,22 @@ async function executeAction(page, action) {
       // Select2 é um dropdown especial
       await page.waitForSelector(action.selector, { timeout: 30000 });
       await page.click(action.selector);
-      await page.waitForTimeout(500);
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Digita o valor no campo de busca do Select2
       await page.keyboard.type(action.text);
-      await page.waitForTimeout(500);
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Pressiona Enter para selecionar
       await page.keyboard.press('Enter');
-      await page.waitForTimeout(500);
+      await new Promise(resolve => setTimeout(resolve, 500));
       break;
       
     case 'wait':
       if (action.selector) {
         await page.waitForSelector(action.selector, { timeout: 30000 });
       } else if (action.time) {
-        await page.waitForTimeout(action.time);
+        await new Promise(resolve => setTimeout(resolve, action.time));
       }
       break;
   }
@@ -339,7 +339,7 @@ async function getTotalPages(page, lastPageButton, firstPageButton, paginationCo
     try {
       await fireRichEvent(page, firstPageButton, 'first');
       console.log('   ⏳ Aguardando carregamento (3 segundos)...');
-      await page.waitForTimeout(3000);
+      await new Promise(resolve => setTimeout(resolve, 3000));
       console.log('   ✓ Posicionado na primeira página');
     } catch (e) {
       console.log('   ⚠️  Botão primeira página não disponível (já está na primeira)');
@@ -353,12 +353,12 @@ async function getTotalPages(page, lastPageButton, firstPageButton, paginationCo
       console.log('   ⚠️  Erro ao disparar evento, tentando cliques múltiplos...');
       for (let i = 1; i <= 6; i++) {
         await page.click(lastPageButton);
-        await page.waitForTimeout(2000);
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
     
     console.log('   ⏳ Aguardando carregamento completo (8 segundos)...');
-    await page.waitForTimeout(8000);
+    await new Promise(resolve => setTimeout(resolve, 8000));
     console.log('   ✓ Última página carregada');
     
     // 3. Pega o número da última página
@@ -387,7 +387,7 @@ async function getTotalPages(page, lastPageButton, firstPageButton, paginationCo
     console.log('   → Voltando para a primeira página...');
     await fireRichEvent(page, firstPageButton, 'first');
     console.log('   ⏳ Aguardando carregamento (5 segundos)...');
-    await page.waitForTimeout(5000);
+    await new Promise(resolve => setTimeout(resolve, 5000));
     console.log('   ✓ Pronto para iniciar scraping da página 1\n');
     
     return totalPages;
@@ -482,7 +482,7 @@ async function extractResults(page, extractionConfig) {
     console.log('✓ Clique realizado, aguardando carregamento...');
     
     // Aguarda a tabela atualizar
-    await page.waitForTimeout(2000);
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Verifica se a tabela ainda existe
     try {

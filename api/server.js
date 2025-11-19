@@ -96,7 +96,7 @@ app.post('/api/scrape/start', async (req, res) => {
     await page.type(config.selectors.login.otpField, otpCode);
     await page.click(config.selectors.login.otpSubmitButton);
     
-    await page.waitForTimeout(5000);
+    await new Promise(resolve => setTimeout(resolve, 5000));
     await page.reload({ waitUntil: 'networkidle2' });
     
     const urlFinal = page.url();
@@ -228,7 +228,7 @@ app.post('/api/scrape/next', async (req, res) => {
     
     // Recarrega página
     await page.reload({ waitUntil: 'networkidle2' });
-    await page.waitForTimeout(2000);
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
     const parameters = [{
       numeroOAB: search.numeroOAB,

@@ -52,7 +52,7 @@ export async function performLoginWithOTP(page, otpCode = null) {
   
   // Aguarda 5 segundos após enviar OTP
   console.log('\n⏳ Aguardando 5 segundos após enviar OTP...');
-  await page.waitForTimeout(5000);
+  await new Promise(resolve => setTimeout(resolve, 5000));
   
   // Atualiza a página para mitigar erros
   console.log('🔄 Atualizando página para garantir sessão...');

@@ -22,7 +22,7 @@ export async function executeNavigationActions(page, actions) {
           if (action.waitForNavigation) {
             await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 });
           } else if (action.waitTime) {
-            await page.waitForTimeout(action.waitTime);
+            await new Promise(resolve => setTimeout(resolve, action.waitTime));
           }
           break;
           
@@ -30,7 +30,7 @@ export async function executeNavigationActions(page, actions) {
           await page.waitForSelector(action.selector, { timeout: 30000 });
           await page.type(action.selector, action.text);
           if (action.waitTime) {
-            await page.waitForTimeout(action.waitTime);
+            await new Promise(resolve => setTimeout(resolve, action.waitTime));
           }
           break;
           
@@ -38,7 +38,7 @@ export async function executeNavigationActions(page, actions) {
           await page.waitForSelector(action.selector, { timeout: 30000 });
           await page.select(action.selector, action.value);
           if (action.waitTime) {
-            await page.waitForTimeout(action.waitTime);
+            await new Promise(resolve => setTimeout(resolve, action.waitTime));
           }
           break;
           
@@ -50,7 +50,7 @@ export async function executeNavigationActions(page, actions) {
           if (action.selector) {
             await page.waitForSelector(action.selector, { timeout: 30000 });
           } else if (action.time) {
-            await page.waitForTimeout(action.time);
+            await new Promise(resolve => setTimeout(resolve, action.time));
           }
           break;
           
