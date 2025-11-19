@@ -104,6 +104,26 @@ app.post('/api/scrape/start', async (req, res) => {
     await page.goto(baseUrl, { waitUntil: 'networkidle2' });
     
     console.log('✅ Login completo');
+    console.log(`📍 URL atual: ${page.url()}`);
+    
+    // Debug: Captura screenshot após login
+    try {
+      const screenshot = await page.screenshot({ encoding: 'base64', fullPage: false });
+      console.log('📸 Screenshot após login (primeiros 100 chars):', screenshot.substring(0, 100));
+    } catch (e) {
+      console.log('⚠️  Não foi possível capturar screenshot');
+    }
+    
+    // Debug: Verifica se o menu existe
+    const menuExists = await page.evaluate(() => {
+      const menu = document.querySelector('#barraSuperiorPrincipal > div > div.navbar-header > ul > li > a');
+      return {
+        exists: !!menu,
+        html: document.body.innerHTML.substring(0, 500)
+      };
+    });
+    console.log('🔍 Menu existe?', menuExists.exists);
+    console.log('🔍 HTML (primeiros 500 chars):', menuExists.html);
     
     // FASE 2: Navegação
     console.log('\n🧭 FASE 2: Navegação');
