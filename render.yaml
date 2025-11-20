@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: pje-scraper-api
+    runtime: node
+    region: oregon
+    plan: free
+    branch: master
+    buildCommand: npm install
+    startCommand: npm run api
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: RENDER
+        value: true
+      - key: PORT
+        value: 3001
+    healthCheckPath: /api/health
