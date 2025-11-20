@@ -45,18 +45,16 @@ export async function performLoginWithOTP(page, otpCode = null) {
   await page.type(config.selectors.login.otpField, otpCode);
   console.log('✓ Código OTP inserido');
   
-  // Clica no botão de confirmar OTP
+  // Clica no botão de confirmar OTP e aguarda a navegação
   const otpSubmitButton = config.selectors.login.otpSubmitButton || '#kc-login';
   console.log('✓ Clicando no botão de confirmação...');
-  await page.click(otpSubmitButton);
   
-  // Aguarda 5 segundos após enviar OTP
-  console.log('\n⏳ Aguardando 5 segundos após enviar OTP...');
-  await new Promise(resolve => setTimeout(resolve, 5000));
-  
-  // Atualiza a página para mitigar erros
-  console.log('🔄 Atualizando página para garantir sessão...');
-  await page.reload({ waitUntil: 'networkidle2' });
+  // Aguarda a navegação que acontece após validar o OTP
+  console.log('\n⏳ Aguardando navegação após validação do OTP...');
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }),
+    page.click(otpSubmitButton)
+  ]);
   
   const finalUrlAfterReload = page.url();
   console.log('✅ Login com 2FA realizado com sucesso!');
@@ -86,6 +84,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log('📍 URL destino:', baseUrl);
     
     await loggedPage.goto(baseUrl, { waitUntil: 'networkidle2' });
+    
+    // Aguarda a página estabilizar completamente
+    console.log('⏳ Aguardando página estabilizar...');
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
     console.log('✅ Página principal carregada!');
     
     console.log('\n✅ Teste de login concluído!');

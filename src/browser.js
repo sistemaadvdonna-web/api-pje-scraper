@@ -6,15 +6,23 @@ export async function initBrowser() {
   // Usa Chromium otimizado para serverless
   const options = { ...config.puppeteerOptions };
   
-  // Detecta ambiente de produção (Render ou similar)
-  const isProduction = process.env.NODE_ENV === 'production' || 
-                       process.env.RENDER || 
-                       !process.env.HOME?.includes('/home/');
+  // Detecta ambiente Render especificamente
+  const isRender = process.env.RENDER === 'true' || 
+                   process.env.RENDER_SERVICE_NAME || 
+                   process.env.RENDER_EXTERNAL_URL;
   
-  if (isProduction) {
-    console.log('🌐 Usando @sparticuz/chromium para produção');
-    options.executablePath = await chromium.executablePath();
-    options.args = chromium.args;
+  if (isRender) {
+    console.log('🌐 Usando @sparticuz/chromium para Render');
+    try {
+      options.executablePath = await chromium.executablePath();
+      options.args = chromium.args;
+    } catch (error) {
+      console.log('⚠️  Erro ao carregar chromium, usando padrão:', error.message);
+    }
+  } else {
+    console.log('🌐 Usando Puppeteer padrão (local)');
+    // Remove executablePath para usar o Chrome local
+    delete options.executablePath;
   }
   
   const browser = await puppeteer.launch(options);

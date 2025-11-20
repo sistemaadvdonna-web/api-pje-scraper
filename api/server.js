@@ -92,30 +92,49 @@ app.post('/api/scrape/start', async (req, res) => {
     await page.type(config.selectors.login.passwordField, config.credentials.password);
     await page.click(config.selectors.login.submitButton);
     
-    await page.waitForSelector(config.selectors.login.otpField, { timeout: 30000 });
-    await page.type(config.selectors.login.otpField, otpCode);
-    await page.click(config.selectors.login.otpSubmitButton);
+    console.log('⏳ Aguardando campo OTP aparecer...');
+    await page.waitForSelector(config.selectors.login.otpField, { visible: true, timeout: 30000 });
+    console.log('✓ Campo OTP encontrado');
     
-    console.log('⏳ Aguardando redirecionamento para aplicação PJE...');
+    // Limpa o campo antes de digitar
+    await page.click(config.selectors.login.otpField, { clickCount: 3 });
+    await page.keyboard.press('Backspace');
     
-    // Aguarda até sair do domínio SSO e chegar no PJE
-    await page.waitForFunction(
-      () => !window.location.href.includes('sso.cloud.pje.jus.br'),
-      { timeout: 30000 }
-    );
+    console.log(`⌨️  Digitando código OTP: ${otpCode}`);
+    await page.type(config.selectors.login.otpField, otpCode, { delay: 100 });
     
-    console.log(`📍 Redirecionado para: ${page.url()}`);
+    // Aguarda um pouco antes de clicar
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Aguarda a página carregar completamente
-    await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {
-      console.log('⚠️  Timeout no waitForNavigation, continuando...');
-    });
+    console.log('🖱️  Clicando no botão de confirmar...');
     
-    // Aguarda estabilização
+    // Aguarda a navegação que acontece após validar o OTP
+    console.log('⏳ Aguardando navegação após validação do OTP...');
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }),
+      page.click(config.selectors.login.otpSubmitButton)
+    ]);
+    
+    const urlFinal = page.url();
+    console.log('✅ OTP validado com sucesso!');
+    console.log('📍 URL após login:', urlFinal);
+    
+    const baseUrl = extractBaseUrl(urlFinal);
+    console.log('🔄 Navegando para URL base:', baseUrl);
+    await page.goto(baseUrl, { waitUntil: 'networkidle2' });
+    
+    // Aguarda a página estabilizar completamente (pode haver redirects)
+    console.log('⏳ Aguardando página estabilizar...');
     await new Promise(resolve => setTimeout(resolve, 3000));
     
+    // Verifica se houve redirect
+    const urlAposEstabilizar = page.url();
+    if (urlAposEstabilizar !== baseUrl) {
+      console.log(`📍 Redirect detectado: ${urlAposEstabilizar}`);
+    }
+    
     console.log('✅ Login completo');
-    console.log(`📍 URL final: ${page.url()}`);
+    console.log(`📍 URL atual: ${page.url()}`);
     
     // FASE 2: Navegação
     console.log('\n🧭 FASE 2: Navegação');

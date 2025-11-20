@@ -17,35 +17,21 @@ export async function executeNavigationActions(page, actions) {
     try {
       switch (action.type) {
         case 'click':
-          // Verifica se o seletor existe antes de tentar clicar
-          const elementExists = await page.$(action.selector);
-          if (!elementExists) {
-            console.log(`⚠️  Seletor não encontrado: ${action.selector}`);
-            console.log(`📍 URL atual: ${page.url()}`);
-            // Tenta encontrar seletores similares
-            const similarSelectors = await page.evaluate((sel) => {
-              const parts = sel.split(' > ');
-              const results = [];
-              for (let i = 0; i < parts.length; i++) {
-                const partial = parts.slice(0, i + 1).join(' > ');
-                if (document.querySelector(partial)) {
-                  results.push(`✓ ${partial}`);
-                } else {
-                  results.push(`✗ ${partial}`);
-                  break;
-                }
-              }
-              return results;
-            }, action.selector);
-            console.log('🔍 Análise do seletor:', similarSelectors.join('\n   '));
-          }
-          
+          // Aguarda o seletor estar disponível
           await page.waitForSelector(action.selector, { timeout: 30000 });
-          await page.click(action.selector);
+          
+          // Se a ação pode causar navegação, aguarda por ela
           if (action.waitForNavigation) {
-            await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 });
-          } else if (action.waitTime) {
-            await new Promise(resolve => setTimeout(resolve, action.waitTime));
+            await Promise.all([
+              page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }),
+              page.click(action.selector)
+            ]);
+          } else {
+            // Clique simples sem navegação
+            await page.click(action.selector);
+            if (action.waitTime) {
+              await new Promise(resolve => setTimeout(resolve, action.waitTime));
+            }
           }
           break;
           
